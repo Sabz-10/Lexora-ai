@@ -6,7 +6,7 @@ function App() {
   const MAX_DOCUMENT_LENGTH = 50000
 
   const [documentText, setDocumentText] = useState('')
-  const [documentType, setDocumentType] = useState('rental_agreement')
+  const [documentType, setDocumentType] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
@@ -25,7 +25,7 @@ function App() {
   async function analyzeDocument(event) {
     event.preventDefault()
 
-    if (!documentText.trim() || loading || cooldown > 0) return
+    if (!documentType || !documentText.trim() || loading || cooldown > 0) return
 
     setCooldown(90)
     setLoading(true)
@@ -290,11 +290,79 @@ const response = await fetch(
             <select
               id="documentType"
               value={documentType}
-              onChange={(event) => setDocumentType(event.target.value)}
+              onChange={(event) => {
+                setDocumentType(event.target.value)
+                setError('')
+                setResult(null)
+              }}
+              required
             >
-              <option value="rental_agreement">Rental agreement</option>
-              <option value="offer_letter">Job offer letter</option>
-              <option value="other">Other document</option>
+              <option value="" disabled>Select a document type first</option>
+
+              <optgroup label="Property & Housing">
+                <option value="rental_agreement">Rental / lease agreement</option>
+                <option value="property_sale_agreement">Property sale agreement</option>
+                <option value="commercial_lease">Commercial lease</option>
+                <option value="property_management_agreement">Property management agreement</option>
+              </optgroup>
+
+              <optgroup label="Employment & Careers">
+                <option value="employment_contract">Employment contract</option>
+                <option value="offer_letter">Job offer letter</option>
+                <option value="freelance_agreement">Freelance / independent contractor agreement</option>
+                <option value="internship_agreement">Internship agreement</option>
+                <option value="nda">Non-disclosure agreement (NDA)</option>
+                <option value="non_compete_agreement">Non-compete agreement</option>
+              </optgroup>
+
+              <optgroup label="Sports & Entertainment">
+                <option value="football_player_contract">Football player contract</option>
+                <option value="athlete_agreement">Professional athlete agreement</option>
+                <option value="sports_sponsorship_agreement">Sports sponsorship agreement</option>
+                <option value="image_rights_agreement">Image rights / endorsement agreement</option>
+                <option value="talent_agreement">Talent / artist agreement</option>
+              </optgroup>
+
+              <optgroup label="Business & Commercial">
+                <option value="service_agreement">Service agreement</option>
+                <option value="business_partnership_agreement">Business partnership agreement</option>
+                <option value="shareholders_agreement">Shareholders' agreement</option>
+                <option value="vendor_supplier_agreement">Vendor / supplier agreement</option>
+                <option value="consulting_agreement">Consulting agreement</option>
+                <option value="franchise_agreement">Franchise agreement</option>
+              </optgroup>
+
+              <optgroup label="Finance & Payments">
+                <option value="loan_agreement">Loan agreement</option>
+                <option value="investment_agreement">Investment agreement</option>
+                <option value="payment_agreement">Payment / installment agreement</option>
+                <option value="personal_guarantee">Personal guarantee</option>
+                <option value="debt_settlement_agreement">Debt settlement agreement</option>
+              </optgroup>
+
+              <optgroup label="Technology & Digital">
+                <option value="software_development_agreement">Software development agreement</option>
+                <option value="saas_subscription_agreement">Software / SaaS subscription agreement</option>
+                <option value="website_development_contract">Website development contract</option>
+                <option value="software_license_agreement">Software licence agreement</option>
+                <option value="data_processing_agreement">Data processing agreement</option>
+              </optgroup>
+
+              <optgroup label="Sales & Services">
+                <option value="sales_agreement">Sales agreement</option>
+                <option value="purchase_agreement">Purchase agreement</option>
+                <option value="distribution_agreement">Distribution agreement</option>
+                <option value="marketing_agreement">Marketing agreement</option>
+                <option value="maintenance_agreement">Maintenance agreement</option>
+              </optgroup>
+
+              <optgroup label="General & Other">
+                <option value="insurance_policy">Insurance policy</option>
+                <option value="copyright_license_agreement">Copyright / IP licence agreement</option>
+                <option value="memorandum_of_understanding">Memorandum of understanding (MoU)</option>
+                <option value="government_service_contract">Government / public service contract</option>
+                <option value="other">Other / unsure</option>
+              </optgroup>
             </select>
 
             <label htmlFor="documentText">DOCUMENT TEXT</label>
@@ -302,9 +370,14 @@ const response = await fetch(
               id="documentText"
               value={documentText}
               onChange={(event) => setDocumentText(event.target.value)}
-              placeholder="Paste your contract or agreement here..."
+              placeholder={
+                documentType
+                  ? "Paste the text of your selected document type here..."
+                  : "Select a document type above to unlock this field."
+              }
               rows={9}
               maxLength={MAX_DOCUMENT_LENGTH}
+              disabled={!documentType}
               required
             />
 
@@ -318,7 +391,7 @@ const response = await fetch(
             <button
               type="submit"
               className="primary-button submit-button"
-              disabled={loading || cooldown > 0 || !documentText.trim()}
+              disabled={!documentType || loading || cooldown > 0 || !documentText.trim()}
               aria-busy={loading}
             >
               {loading ? (
