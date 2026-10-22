@@ -5,6 +5,7 @@ import re
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai.errors import ServerError
 
 load_dotenv()
 
@@ -150,17 +151,44 @@ def validate_result(result: dict) -> dict:
 # 3. GEMINI JSON REQUEST
 # ---------------------------------------------------------
 
+
 def generate_json(prompt: str) -> dict:
     if not client:
         raise RuntimeError("GEMINI_API_KEY is missing from backend/.env")
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
-        contents=prompt,
-        config={"response_mime_type": "application/json"},
-    )
+    models_to_try = [
+        "gemini-3.6-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3-flash-preview",
+    ]
+
+    response = None
+    last_error = None
+
+    for model_name in models_to_try:
+        try:
+            print(f"Trying Gemini model: {model_name}")
+
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config={"response_mime_type": "application/json"},
+            )
+
+            print(f"Gemini model succeeded: {model_name}")
+            break
+
+        except ServerError as exc:
+            last_error = exc
+            print(f"Gemini model failed ({model_name}): {exc}")
+
+    if response is None:
+        if last_error is not None:
+            raise last_error
+        raise RuntimeError("No Gemini model returned a response.")
 
     response_text = response.text
+
     if not response_text or not response_text.strip():
         raise ValueError("The AI returned an empty response.")
 
