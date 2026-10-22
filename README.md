@@ -20,6 +20,7 @@ It combines a **React/Vite frontend**, **FastAPI backend**, and **Google Gemini 
 - 🌐 Publicly deployed full-stack application
 - 🔐 API keys kept on the backend
 - ⏱️ Analysis cooldown to prevent excessive requests
+- 🔄 Gemini model fallback handling for certain server errors
 
 ---
 
@@ -170,7 +171,7 @@ http://127.0.0.1:8000/docs
 
 ### 3. Set up the frontend
 
-Open another terminal and navigate to:
+Open another terminal and navigate to the project directory:
 
 ```bash
 cd frontend
@@ -182,7 +183,7 @@ Install dependencies:
 npm install
 ```
 
-Create a frontend environment file if needed:
+Create a `.env` file inside the `frontend` directory:
 
 ```env
 VITE_API_URL=http://127.0.0.1:8000/api/analyze
@@ -216,7 +217,13 @@ This is a **secret** and must remain on the backend.
 
 ### Frontend
 
-The frontend uses:
+For local development:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000/api/analyze
+```
+
+For production, the frontend uses the deployed backend:
 
 ```env
 VITE_API_URL=https://lexora-ai-fntx.onrender.com/api/analyze
@@ -255,6 +262,20 @@ GET /api/sample
 
 Used for testing whether the deployed backend is responding correctly.
 
+You can explore the API using the FastAPI documentation:
+
+https://lexora-ai-fntx.onrender.com/docs
+
+---
+
+## Reliability and Error Handling
+
+Gemini model availability can vary due to temporary outages, server errors, or capacity constraints.
+
+Lexora AI includes **Gemini model fallback handling** that attempts alternative configured models when a request fails with a server error.
+
+This mechanism can improve resilience when a particular model is temporarily unavailable. However, it does not guarantee success if all configured models fail or encounter capacity issues.
+
 ---
 
 ## Deployment
@@ -269,7 +290,7 @@ Production environment variable:
 VITE_API_URL=https://lexora-ai-fntx.onrender.com/api/analyze
 ```
 
-When changes are pushed to the GitHub repository, Vercel can automatically create a new deployment.
+When changes are pushed to the connected GitHub repository and branch, Vercel can automatically create a new deployment.
 
 ### Backend — Render
 
@@ -322,6 +343,8 @@ Lexora AI follows a basic separation between frontend and backend secrets.
 
 Do not commit API keys, passwords, tokens, or `.env` files to the repository.
 
+Only submit contract documents when you understand how the application and its AI provider handle submitted data. Avoid using confidential contracts for testing.
+
 ---
 
 ## Important Disclaimer
@@ -361,4 +384,7 @@ Built as a full-stack AI project using React, FastAPI, and Gemini.
 
 ## License
 
-This project is currently available for educational and development purposes.
+This project is currently available for educational and development purposes. No standard open-source license has been specified yet.
+
+If you intend to allow others to reuse, modify, or distribute the code, consider adding a suitable open-source license.
+
