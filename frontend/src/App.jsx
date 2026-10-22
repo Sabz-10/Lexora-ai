@@ -27,7 +27,7 @@ function App() {
 
     if (!documentText.trim() || loading || cooldown > 0) return
 
-    setCooldown(20)
+    setCooldown(90)
     setLoading(true)
     setError('')
     setResult(null)
