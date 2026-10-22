@@ -155,7 +155,7 @@ def generate_json(prompt: str) -> dict:
         raise RuntimeError("GEMINI_API_KEY is missing from backend/.env")
 
     response = client.models.generate_content(
-        model="gemini-3.1-flash-lite",
+        model="gemini-3.6-flash",
         contents=prompt,
         config={"response_mime_type": "application/json"},
     )
