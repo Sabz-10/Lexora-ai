@@ -1,9 +1,11 @@
+from document_routes import router as document_router
 from analyzer import analyze_contract
 from fastapi import HTTPException
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Contract Decoder API")
+app.include_router(document_router)
 
 app.add_middleware(
     CORSMiddleware,
