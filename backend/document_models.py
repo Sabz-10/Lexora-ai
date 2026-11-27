@@ -32,3 +32,12 @@ class DocumentChunk:
     source_block_ids: list[int] = field(
         default_factory=list
     )
+@dataclass
+class AnalysisPlan:
+    strategy: str
+    total_estimated_tokens: int
+    chunks: list[DocumentChunk]
+
+    @property
+    def total_chunks(self) -> int:
+        return len(self.chunks)
