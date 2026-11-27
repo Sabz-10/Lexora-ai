@@ -3368,3 +3368,71 @@ body {
   }
 
 }
+.input-mode-switch .mode-indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+
+  width: calc((100% - 18px) / 2);
+  height: auto;
+  box-sizing: border-box;
+
+  border-radius: 11px;
+  background: #ffffff;
+
+  pointer-events: none;
+  z-index: 0;
+}
+
+.input-mode-switch .mode-button {
+  position: relative;
+  z-index: 1;
+}
+.input-mode-switch {
+  position: relative;
+  isolation: isolate;
+}
+
+.input-mode-switch .mode-indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+
+  width: calc((100% - 18px) / 2);
+  height: auto;
+
+  border-radius: 11px;
+  background: #ffffff;
+
+  pointer-events: none;
+  z-index: 0;
+
+  transition: transform 0.4s cubic-bezier(.22, 1, .36, 1);
+}
+
+.input-mode-switch.mode-upload .mode-indicator {
+  transform: translateX(0);
+}
+
+.input-mode-switch.mode-paste .mode-indicator {
+  transform: translateX(calc(100% + 6px));
+}
+
+.input-mode-switch .mode-button {
+  position: relative;
+  z-index: 1;
+}
+
+.input-mode-switch .mode-button.active {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input-mode-switch .mode-indicator {
+    transition: none;
+  }
+}

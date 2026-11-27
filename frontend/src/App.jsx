@@ -1113,7 +1113,7 @@ body: JSON.stringify({
             </div>
 
             <div
-  className="input-mode-switch"
+  className={`input-mode-switch mode-${inputMode}`}
   role="group"
   aria-label="Document input method"
 >
