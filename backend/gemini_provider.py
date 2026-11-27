@@ -5,7 +5,8 @@ from google.genai import errors, types
 from pydantic import ValidationError
 
 from analysis_models import ChunkAnalysisResponse
-
+from request_budget import RequestBudget
+from config import GEMINI_REQUEST_TIMEOUT_MS
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,12 @@ class GeminiInvalidResponseError(GeminiProviderError):
 
 class GeminiProvider:
 
-    def __init__(self, client, models):
+    def __init__(
+        self,
+        client,
+        models,
+        request_budget: RequestBudget | None = None,
+    ):
 
         if client is None:
             raise GeminiConfigurationError(
@@ -50,7 +56,7 @@ class GeminiProvider:
 
         self.client = client
         self.models = tuple(models)
-
+        self.request_budget = request_budget
     # ========================================================
     # PROVIDER EXECUTION
     # ========================================================
@@ -67,11 +73,20 @@ class GeminiProvider:
             response_json_schema=(
                 ChunkAnalysisResponse.model_json_schema()
             ),
+            http_options=types.HttpOptions(
+                timeout=GEMINI_REQUEST_TIMEOUT_MS,
+                retry_options=types.HttpRetryOptions(
+                    attempts=1,
+                ),
+            ),
         )
 
         last_failure = None
 
         for model_name in self.models:
+            if self.request_budget is not None:
+
+                self.request_budget.consume()
 
             logger.info(
                 "Attempting Gemini model: %s",

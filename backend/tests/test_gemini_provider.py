@@ -1,3 +1,9 @@
+from config import GEMINI_REQUEST_TIMEOUT_MS
+
+from request_budget import (
+    RequestBudget,
+    RequestBudgetExceededError,
+)
 import httpx
 import json
 from unittest.mock import Mock
@@ -420,3 +426,126 @@ def test_all_models_transport_failure():
         client.models.generate_content.call_count
         == len(MODELS)
     )
+# ============================================================
+# REQUEST TIMEOUT AND SDK RETRY CONFIGURATION
+# ============================================================
+
+def test_request_timeout_configuration():
+
+    client, provider = create_provider()
+
+    client.models.generate_content.return_value = (
+        mock_response(valid_response())
+    )
+
+    provider("Instructions", "Prompt")
+
+    config = (
+        client.models.generate_content
+        .call_args.kwargs["config"]
+    )
+
+    assert (
+        config.http_options.timeout
+        == GEMINI_REQUEST_TIMEOUT_MS
+    )
+
+
+def test_sdk_retry_configuration():
+
+    client, provider = create_provider()
+
+    client.models.generate_content.return_value = (
+        mock_response(valid_response())
+    )
+
+    provider("Instructions", "Prompt")
+
+    config = (
+        client.models.generate_content
+        .call_args.kwargs["config"]
+    )
+
+    assert (
+        config.http_options.retry_options.attempts
+        == 1
+    )
+
+
+# ============================================================
+# REQUEST BUDGET INTEGRATION
+# ============================================================
+
+def test_successful_request_consumes_budget():
+
+    client = Mock()
+
+    budget = RequestBudget(max_requests=5)
+
+    provider = GeminiProvider(
+        client,
+        MODELS,
+        request_budget=budget,
+    )
+
+    client.models.generate_content.return_value = (
+        mock_response(valid_response())
+    )
+
+    provider("Instructions", "Prompt")
+
+    assert budget.used_requests == 1
+    assert budget.remaining_requests == 4
+
+
+def test_model_fallback_consumes_budget():
+
+    client = Mock()
+
+    budget = RequestBudget(max_requests=5)
+
+    provider = GeminiProvider(
+        client,
+        MODELS,
+        request_budget=budget,
+    )
+
+    client.models.generate_content.side_effect = [
+        create_api_error(503),
+        mock_response(valid_response()),
+    ]
+
+    provider("Instructions", "Prompt")
+
+    assert budget.used_requests == 2
+    assert budget.remaining_requests == 3
+
+
+def test_budget_exhaustion_prevents_fallback():
+
+    client = Mock()
+
+    budget = RequestBudget(max_requests=1)
+
+    provider = GeminiProvider(
+        client,
+        MODELS,
+        request_budget=budget,
+    )
+
+    client.models.generate_content.side_effect = [
+        create_api_error(503),
+        mock_response(valid_response()),
+    ]
+
+    with pytest.raises(RequestBudgetExceededError):
+
+        provider("Instructions", "Prompt")
+
+    assert (
+        client.models.generate_content.call_count
+        == 1
+    )
+
+    assert budget.used_requests == 1
+    assert budget.remaining_requests == 0
